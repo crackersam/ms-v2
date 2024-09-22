@@ -97,31 +97,21 @@ app.prepare().then(() => {
       console.log(`Is this a sender request? ${sender}`);
       // The client indicates if it is a producer or a consumer
       // if sender is true, indicates a producer else a consumer
-      if (
-        transports.findIndex(
-          (t) => t.sender === sender && t.socketId === socket.id
-        ) === -1
-      ) {
+      const transportIndex = transports.findIndex(
+        (obj) => obj.sender === sender && obj.socketId === socket.id
+      );
+      console.log("matching transport found at ", transportIndex);
+      if (transportIndex === -1) {
         const newTransport = {
           socketId: socket.id,
           sender,
           transport: await createWebRtcTransport(callback),
         };
         transports = [...transports, newTransport];
-        console.log("new transport created");
+        console.log("-new transport created");
       } else {
-        const t =
-          transports[
-            transports.findIndex(
-              (t) => t.sender === sender && t.socketId === socket.id
-            )
-          ];
-        console.log(
-          "using transport",
-          transports.findIndex(
-            (t) => t.sender === sender && t.socketId === socket.id
-          )
-        );
+        console.log("using transport", transportIndex);
+        const t = transports[transportIndex];
         callback({
           // https://mediasoup.org/documentation/v3/mediasoup-client/api/#TransportOptions
           params: {
