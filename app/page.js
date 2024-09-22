@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import { socket } from "@/socket";
 import * as mediasoup from "mediasoup-client";
+import Consumer from "./Consumer";
 
 const Home = () => {
   const localVideo = React.useRef(null);
@@ -34,8 +35,7 @@ const Home = () => {
   const device = React.useRef(null);
   const producerTransport = React.useRef(null);
   const producer = React.useRef(null);
-  const consumerTransport = React.useRef(null);
-  const consumer = React.useRef(null);
+  const [consumerTransports, setConsumerTransports] = React.useState([]);
   const isProducer = React.useRef(false);
   useEffect(() => {
     socket.on("connection-success", ({ socketId, existsProducer }) => {
@@ -66,7 +66,17 @@ const Home = () => {
   };
 
   const goCreateTransport = () => {
-    isProducer.current ? createSendTransport() : createRecvTransport();
+    isProducer.current ? createSendTransport() : getProducers();
+  };
+
+  const getProducers = () => {
+    socket.emit("getProducers", (data) => {
+      data.forEach((producer) => {
+        if (producer.kind === "video") {
+          createRecvTransport(producer.id);
+        }
+      });
+    });
   };
 
   const getRtpCapabilities = async () => {
@@ -177,7 +187,7 @@ const Home = () => {
     });
   };
 
-  const createRecvTransport = async () => {
+  const createRecvTransport = async (producerId) => {
     // see server's socket.on('consume', sender?, ...)
     // this is a call from Consumer, so sender = false
     await socket.emit(
@@ -196,12 +206,12 @@ const Home = () => {
         // creates a new WebRTC Transport to receive media
         // based on server's consumer transport params
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#device-createRecvTransport
-        consumerTransport.current = device.current.createRecvTransport(params);
+        let consumerTransport = device.current.createRecvTransport(params);
 
         // https://mediasoup.org/documentation/v3/communication-between-client-and-server/#producing-media
         // this event is raised when a first call to transport.produce() is made
         // see connectRecvTransport() below
-        consumerTransport.current.on(
+        consumerTransport.on(
           "connect",
           async ({ dtlsParameters }, callback, errback) => {
             try {
@@ -219,12 +229,12 @@ const Home = () => {
             }
           }
         );
-        connectRecvTransport();
+        connectRecvTransport(consumerTransport, producerId);
       }
     );
   };
 
-  const connectRecvTransport = async () => {
+  const connectRecvTransport = async (consumerTransport, producerId) => {
     // for consumer, we need to tell the server first
     // to create a consumer based on the rtpCapabilities and consume
     // if the router can consume, it will send back a set of params as below
@@ -232,6 +242,7 @@ const Home = () => {
       "consume",
       {
         rtpCapabilities: device.current.rtpCapabilities,
+        producerId,
       },
       async ({ params }) => {
         if (params.error) {
@@ -242,21 +253,17 @@ const Home = () => {
         console.log(params);
         // then consume with the local consumer transport
         // which creates a consumer
-        consumer.current = await consumerTransport.current.consume({
+        const consumer = await consumerTransport.consume({
           id: params.id,
           producerId: params.producerId,
           kind: params.kind,
           rtpParameters: params.rtpParameters,
         });
 
-        // destructure and retrieve the video track from the producer
-        const { track } = consumer.current;
-
-        remoteVideo.current.srcObject = new MediaStream([track]);
-
-        // the server consumer started with media paused
-        // so we need to inform the server to resume
-        socket.emit("consumer-resume");
+        setConsumerTransports([
+          ...consumerTransports,
+          { consumerTransport, consumer, producerId },
+        ]);
       }
     );
   };
@@ -266,7 +273,13 @@ const Home = () => {
       <button onClick={getLocalStream}>Publish</button>
       <button onClick={goConsume}>Consume</button>
       <video ref={localVideo} autoPlay muted controls />
-      <video ref={remoteVideo} autoPlay controls />
+      {consumerTransports.map((consumerTransport, i) => (
+        <Consumer
+          key={i}
+          consumerTransport={consumerTransport}
+          socket={socket}
+        />
+      ))}
     </div>
   );
 };

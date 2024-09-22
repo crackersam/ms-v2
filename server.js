@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import fs from "fs";
 import path from "path";
 import mediasoup from "mediasoup";
+import { Socket } from "socket.io-client";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -24,10 +25,9 @@ app.prepare().then(() => {
 
   let worker;
   let router;
-  let producerTransport;
-  let consumerTransport;
-  let producer;
-  let consumer;
+  let transports = [];
+  let producers = [];
+  let consumers = [];
 
   const createWorker = async () => {
     worker = await mediasoup.createWorker({
@@ -67,7 +67,6 @@ app.prepare().then(() => {
   io.on("connection", async (socket) => {
     socket.emit("connection-success", {
       socketId: socket.id,
-      existsProducer: producer ? true : false,
     });
 
     socket.on("disconnect", () => {
@@ -98,20 +97,59 @@ app.prepare().then(() => {
       console.log(`Is this a sender request? ${sender}`);
       // The client indicates if it is a producer or a consumer
       // if sender is true, indicates a producer else a consumer
-      if (sender) producerTransport = await createWebRtcTransport(callback);
-      else consumerTransport = await createWebRtcTransport(callback);
+      if (
+        transports.findIndex(
+          (t) => t.sender === sender && t.socketId === socket.id
+        ) === -1
+      ) {
+        const newTransport = {
+          socketId: socket.id,
+          sender,
+          transport: await createWebRtcTransport(callback),
+        };
+        transports = [...transports, newTransport];
+        console.log("new transport created");
+      } else {
+        const t =
+          transports[
+            transports.findIndex(
+              (t) => t.sender === sender && t.socketId === socket.id
+            )
+          ];
+        console.log(
+          "using transport",
+          transports.findIndex(
+            (t) => t.sender === sender && t.socketId === socket.id
+          )
+        );
+        callback({
+          // https://mediasoup.org/documentation/v3/mediasoup-client/api/#TransportOptions
+          params: {
+            id: t.transport.id,
+            iceParameters: t.transport.iceParameters,
+            iceCandidates: t.transport.iceCandidates,
+            dtlsParameters: t.transport.dtlsParameters,
+          },
+        });
+      }
     });
 
     socket.on("transport-connect", async ({ dtlsParameters }) => {
       console.log("DTLS PARAMS... ", { dtlsParameters });
-      await producerTransport.connect({ dtlsParameters });
+      await transports[
+        transports.findIndex((obj) => obj.sender && obj.socketId === socket.id)
+      ].transport.connect({ dtlsParameters });
     });
 
     socket.on(
       "transport-produce",
       async ({ kind, rtpParameters, appData }, callback) => {
         // call produce based on the prameters from the client
-        producer = await producerTransport.produce({
+        let producer = await transports[
+          transports.findIndex(
+            (obj) => obj.sender && obj.socketId === socket.id
+          )
+        ].transport.produce({
           kind,
           rtpParameters,
         });
@@ -123,6 +161,8 @@ app.prepare().then(() => {
           producer.close();
         });
 
+        producers = [...producers, { socketId: socket.id, producer }];
+
         // Send back to the client the Producer's id
         callback({
           id: producer.id,
@@ -132,21 +172,41 @@ app.prepare().then(() => {
 
     socket.on("transport-recv-connect", async ({ dtlsParameters }) => {
       console.log(`DTLS PARAMS: ${dtlsParameters}`);
-      await consumerTransport.connect({ dtlsParameters });
+      const i = transports.findIndex(
+        (obj) => obj.socketId === socket.id && !obj.sender
+      );
+      if (!transports[i].transport.appData.connected) {
+        transports[i].transport.appData.connected = true;
+        await transports[i].transport.connect({ dtlsParameters });
+      }
     });
 
-    socket.on("consume", async ({ rtpCapabilities }, callback) => {
+    socket.on("getProducers", (callback) => {
+      let currentProducers = [];
+      producers.forEach((producer) => {
+        currentProducers = [
+          ...currentProducers,
+          { id: producer.producer.id, kind: producer.producer.kind },
+        ];
+      });
+      callback(currentProducers);
+    });
+
+    socket.on("consume", async ({ rtpCapabilities, producerId }, callback) => {
       try {
         // check if the router can consume the specified producer
         if (
           router.canConsume({
-            producerId: producer.id,
+            producerId: producerId,
             rtpCapabilities,
           })
         ) {
+          const i = transports.findIndex(
+            (obj) => obj.socketId === socket.id && !obj.sender
+          );
           // transport can now consume and return a consumer
-          consumer = await consumerTransport.consume({
-            producerId: producer.id,
+          const consumer = await transports[i].transport.consume({
+            producerId: producerId,
             rtpCapabilities,
             paused: true,
           });
@@ -163,11 +223,14 @@ app.prepare().then(() => {
           // to send back to the Client
           const params = {
             id: consumer.id,
-            producerId: producer.id,
+            producerId: producerId,
             kind: consumer.kind,
             rtpParameters: consumer.rtpParameters,
           };
-
+          consumers = [
+            ...consumers,
+            { consumer, socketId: socket.id, producerId },
+          ];
           // send the parameters to the client
           callback({ params });
         }
@@ -181,9 +244,11 @@ app.prepare().then(() => {
       }
     });
 
-    socket.on("consumer-resume", async () => {
-      console.log("consumer resume");
-      await consumer.resume();
+    socket.on("consumer-resume", async ({ producerId }) => {
+      console.log("consumer resume ", producerId);
+      await consumers[
+        consumers.findIndex((obj) => obj.producerId === producerId)
+      ].consumer.resume();
     });
 
     const createWebRtcTransport = async (callback) => {
