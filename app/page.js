@@ -34,8 +34,9 @@ const Home = () => {
   });
   const device = React.useRef(null);
   const producerTransport = React.useRef(null);
+  const consumerTransport = React.useRef(null);
   const producer = React.useRef(null);
-  const [consumerTransports, setConsumerTransports] = React.useState([]);
+  const [consumers, setConsumers] = React.useState([]);
   const isProducer = React.useRef(false);
   useEffect(() => {
     socket.on("connection-success", ({ socketId, existsProducer }) => {
@@ -57,6 +58,7 @@ const Home = () => {
       });
   };
   const goConsume = () => {
+    createRecvTransport();
     goConnect(false);
   };
 
@@ -73,7 +75,8 @@ const Home = () => {
     socket.emit("getProducers", (data) => {
       data.forEach((producer) => {
         if (producer.kind === "video") {
-          createRecvTransport(producer.id);
+          console.log("connecting recv transport", producer.id);
+          connectRecvTransport(producer.id);
         }
       });
     });
@@ -206,15 +209,16 @@ const Home = () => {
         // creates a new WebRTC Transport to receive media
         // based on server's consumer transport params
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#device-createRecvTransport
-        let consumerTransport = device.current.createRecvTransport(params);
+        consumerTransport.current = device.current.createRecvTransport(params);
 
         // https://mediasoup.org/documentation/v3/communication-between-client-and-server/#producing-media
         // this event is raised when a first call to transport.produce() is made
         // see connectRecvTransport() below
-        consumerTransport.on(
+        consumerTransport.current.on(
           "connect",
           async ({ dtlsParameters }, callback, errback) => {
             try {
+              console.log("consumer transport connect");
               // Signal local DTLS parameters to the server side transport
               // see server's socket.on('transport-recv-connect', ...)
               await socket.emit("transport-recv-connect", {
@@ -229,12 +233,12 @@ const Home = () => {
             }
           }
         );
-        connectRecvTransport(consumerTransport, producerId);
+        connectRecvTransport(producerId);
       }
     );
   };
 
-  const connectRecvTransport = async (consumerTransport, producerId) => {
+  const connectRecvTransport = async (producerId) => {
     // for consumer, we need to tell the server first
     // to create a consumer based on the rtpCapabilities and consume
     // if the router can consume, it will send back a set of params as below
@@ -253,16 +257,16 @@ const Home = () => {
         console.log(params);
         // then consume with the local consumer transport
         // which creates a consumer
-        const consumer = await consumerTransport.consume({
+        const consumer = await consumerTransport.current.consume({
           id: params.id,
           producerId: params.producerId,
           kind: params.kind,
           rtpParameters: params.rtpParameters,
         });
 
-        setConsumerTransports((prevConsumerTransports) => [
-          ...prevConsumerTransports,
-          { consumerTransport, consumer, producerId },
+        setConsumers((prevConsumers) => [
+          ...prevConsumers,
+          { consumer, producerId },
         ]);
       }
     );
@@ -273,12 +277,8 @@ const Home = () => {
       <button onClick={getLocalStream}>Publish</button>
       <button onClick={goConsume}>Consume</button>
       <video ref={localVideo} autoPlay muted controls />
-      {consumerTransports.map((consumerTransport, i) => (
-        <Consumer
-          key={i}
-          consumerTransport={consumerTransport}
-          socket={socket}
-        />
+      {consumers.map((consumer, i) => (
+        <Consumer key={i} consumer={consumer} socket={socket} />
       ))}
     </div>
   );
