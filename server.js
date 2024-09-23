@@ -166,6 +166,7 @@ app.prepare().then(() => {
         (obj) => obj.socketId === socket.id && !obj.sender
       );
       if (!transports[i].transport.appData.connected) {
+        console.log("first time connection");
         transports[i].transport.appData.connected = true;
         await transports[i].transport.connect({ dtlsParameters });
       }
@@ -237,7 +238,9 @@ app.prepare().then(() => {
     socket.on("consumer-resume", async ({ producerId }) => {
       console.log("consumer resume ", producerId);
       await consumers[
-        consumers.findIndex((obj) => obj.producerId === producerId)
+        consumers.findIndex(
+          (obj) => obj.socketId === socket.id && obj.producerId === producerId
+        )
       ].consumer.resume();
     });
 
