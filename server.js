@@ -142,9 +142,15 @@ app.prepare().then(() => {
         ].transport.produce({
           kind,
           rtpParameters,
+          appData,
         });
 
-        console.log("Producer ID: ", producer.id, producer.kind);
+        console.log(
+          "Producer ID: ",
+          producer.id,
+          producer.kind,
+          producer.appData
+        );
         socket.broadcast.emit("producer-add", {
           id: producer.id,
           kind: producer.kind,
@@ -221,6 +227,10 @@ app.prepare().then(() => {
             producerId: producerId,
             kind: consumer.kind,
             rtpParameters: consumer.rtpParameters,
+            appData:
+              producers[
+                producers.findIndex((p) => p.producer.id === producerId)
+              ].producer.appData.mediaTag,
           };
           consumers = [
             ...consumers,

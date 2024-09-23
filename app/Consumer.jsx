@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 
-const Consumer = ({ consumer, socket }) => {
+const Consumer = ({ consumer, audioConsumer, socket }) => {
   const videoRef = useRef();
   const runOnce = useRef(false);
   useEffect(() => {
@@ -14,6 +14,15 @@ const Consumer = ({ consumer, socket }) => {
     });
     runOnce.current = true;
   }, []);
+  useEffect(() => {
+    if (audioConsumer) {
+      const { track } = audioConsumer.consumer;
+      videoRef.current.srcObject.addTrack(track);
+      socket.emit("consumer-resume", {
+        producerId: audioConsumer.producerId,
+      });
+    }
+  }, [audioConsumer]);
   return consumer ? (
     <div className="flex flex-col w-1/5">
       <video ref={videoRef} autoPlay controls playsInline />

@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { socket } from "@/socket";
 import * as mediasoup from "mediasoup-client";
 import Consumer from "./Consumer";
+import { v4 as uuidv4 } from "uuid";
 
 const Home = () => {
   const localVideo = React.useRef(null);
@@ -39,6 +40,7 @@ const Home = () => {
   const producer = React.useRef(null);
   const audioProducer = React.useRef(null);
   const [consumers, setConsumers] = React.useState([]);
+  const [audioConsumers, setAudioConsumers] = React.useState([]);
   const isProducer = React.useRef(false);
   const isConsuming = React.useRef(false);
   const runOnce = React.useRef(false);
@@ -53,6 +55,12 @@ const Home = () => {
         connectRecvTransport(id);
       }
     });
+    const publishId = uuidv4();
+    params.current.appData = { ...params.current, mediaTag: publishId };
+    audioParams.current.appData = {
+      ...audioParams.current,
+      mediaTag: publishId,
+    };
     runOnce.current = true;
   }, []);
 
@@ -292,11 +300,18 @@ const Home = () => {
           kind: params.kind,
           rtpParameters: params.rtpParameters,
         });
-
-        setConsumers((prevConsumers) => [
-          ...prevConsumers,
-          { consumer, producerId },
-        ]);
+        if (params.kind === "video") {
+          setConsumers((prevConsumers) => [
+            ...prevConsumers,
+            { consumer, producerId, appData: params.appData },
+          ]);
+        } else if (params.kind === "audio") {
+          console.log("audio consumer");
+          setAudioConsumers((prev) => [
+            ...prev,
+            { consumer, producerId, appData: params.appData },
+          ]);
+        }
       }
     );
   };
@@ -306,9 +321,22 @@ const Home = () => {
       <button onClick={getLocalStream}>Publish</button>
       <button onClick={goConsume}>Consume</button>
       <video ref={localVideo} autoPlay muted controls />
-      {consumers.map((consumer, i) => (
-        <Consumer key={i} consumer={consumer} socket={socket} />
-      ))}
+
+      {consumers.map((consumer, i) => {
+        // Find the matching audioConsumer based on appData
+        const matchingAudio = audioConsumers.find(
+          (audio) => audio.appData === consumer.appData
+        );
+
+        return (
+          <Consumer
+            key={i}
+            consumer={consumer} // Pass the video stream
+            audioConsumer={matchingAudio || undefined} // Pass the audio stream only if it exists
+            socket={socket}
+          />
+        );
+      })}
     </div>
   );
 };
