@@ -145,6 +145,10 @@ app.prepare().then(() => {
         });
 
         console.log("Producer ID: ", producer.id, producer.kind);
+        socket.broadcast.emit("producer-add", {
+          id: producer.id,
+          kind: producer.kind,
+        });
 
         producer.on("transportclose", () => {
           console.log("transport for this producer closed ");

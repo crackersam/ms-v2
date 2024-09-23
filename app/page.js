@@ -38,10 +38,20 @@ const Home = () => {
   const producer = React.useRef(null);
   const [consumers, setConsumers] = React.useState([]);
   const isProducer = React.useRef(false);
+  const isConsuming = React.useRef(false);
+  const runOnce = React.useRef(false);
   useEffect(() => {
+    if (runOnce.current) return;
     socket.on("connection-success", ({ socketId, existsProducer }) => {
       console.log(`Connected with socketId: ${socketId}, ${existsProducer}`);
     });
+    socket.on("producer-add", ({ id, kind }) => {
+      console.log(`Producer added: ${id}, ${kind}`);
+      if (kind === "video") {
+        connectRecvTransport(id);
+      }
+    });
+    runOnce.current = true;
   }, []);
 
   const getLocalStream = () => {
@@ -58,8 +68,10 @@ const Home = () => {
       });
   };
   const goConsume = () => {
+    if (isConsuming.current) return;
     createRecvTransport();
     goConnect(false);
+    isConsuming.current = true;
   };
 
   const goConnect = (producerOrConsumer) => {
