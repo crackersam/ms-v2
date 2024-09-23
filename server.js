@@ -225,7 +225,7 @@ app.prepare().then(() => {
           callback({ params });
         }
       } catch (error) {
-        console.log(error.message);
+        console.log(error.message, error.stack);
         callback({
           params: {
             error: error,

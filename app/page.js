@@ -260,8 +260,8 @@ const Home = () => {
           rtpParameters: params.rtpParameters,
         });
 
-        setConsumerTransports([
-          ...consumerTransports,
+        setConsumerTransports((prevConsumerTransports) => [
+          ...prevConsumerTransports,
           { consumerTransport, consumer, producerId },
         ]);
       }
