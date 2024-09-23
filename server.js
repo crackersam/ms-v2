@@ -71,6 +71,17 @@ app.prepare().then(() => {
 
     socket.on("disconnect", () => {
       console.log("user disconnected");
+
+      // remove the transport associated with the socket
+      transports = transports.filter((obj) => obj.socketId !== socket.id);
+
+      // remove the producer associated with the socket
+      producers = producers.filter((obj) => obj.socketId !== socket.id);
+
+      // remove the consumer associated with the socket
+      consumers = consumers.filter((obj) => obj.socketId !== socket.id);
+
+      socket.broadcast.emit("producer-remove", { socketId: socket.id });
     });
 
     socket.on("createRoom", async (callback) => {
@@ -231,6 +242,10 @@ app.prepare().then(() => {
               producers[
                 producers.findIndex((p) => p.producer.id === producerId)
               ].producer.appData.mediaTag,
+            socketId:
+              producers[
+                producers.findIndex((p) => p.producer.id === producerId)
+              ].socketId,
           };
           consumers = [
             ...consumers,

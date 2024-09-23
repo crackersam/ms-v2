@@ -61,6 +61,30 @@ const Home = () => {
       ...audioParams.current,
       mediaTag: publishId,
     };
+    socket.on("producer-remove", ({ socketId }) => {
+      setConsumers((prevConsumers) => {
+        const newConsumers = [...prevConsumers];
+        const index = newConsumers.findIndex(
+          (consumer) => consumer.socketId === socketId
+        );
+        if (index !== -1) {
+          newConsumers[index].consumer.close();
+          newConsumers[index] = null;
+        }
+        return newConsumers;
+      });
+      setAudioConsumers((prevConsumers) => {
+        const newConsumers = [...prevConsumers];
+        const index = newConsumers.findIndex(
+          (consumer) => consumer.socketId === socketId
+        );
+        if (index !== -1) {
+          newConsumers[index].consumer.close();
+          newConsumers[index] = null;
+        }
+        return newConsumers;
+      });
+    });
     runOnce.current = true;
   }, []);
 
@@ -255,7 +279,6 @@ const Home = () => {
           "connect",
           async ({ dtlsParameters }, callback, errback) => {
             try {
-              console.log("consumer transport connect");
               // Signal local DTLS parameters to the server side transport
               // see server's socket.on('transport-recv-connect', ...)
               await socket.emit("transport-recv-connect", {
@@ -299,17 +322,27 @@ const Home = () => {
           producerId: params.producerId,
           kind: params.kind,
           rtpParameters: params.rtpParameters,
+          socketId: params.socketId,
         });
         if (params.kind === "video") {
           setConsumers((prevConsumers) => [
             ...prevConsumers,
-            { consumer, producerId, appData: params.appData },
+            {
+              consumer,
+              producerId,
+              socketId: params.socketId,
+              appData: params.appData,
+            },
           ]);
         } else if (params.kind === "audio") {
-          console.log("audio consumer");
           setAudioConsumers((prev) => [
             ...prev,
-            { consumer, producerId, appData: params.appData },
+            {
+              consumer,
+              producerId,
+              socketId: params.socketId,
+              appData: params.appData,
+            },
           ]);
         }
       }
@@ -325,7 +358,7 @@ const Home = () => {
       {consumers.map((consumer, i) => {
         // Find the matching audioConsumer based on appData
         const matchingAudio = audioConsumers.find(
-          (audio) => audio.appData === consumer.appData
+          (audio) => audio?.appData === consumer?.appData
         );
 
         return (
