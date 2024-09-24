@@ -156,12 +156,7 @@ app.prepare().then(() => {
           appData,
         });
 
-        console.log(
-          "Producer ID: ",
-          producer.id,
-          producer.kind,
-          producer.appData
-        );
+        console.log("Producer ID: ", producer.id, producer.kind);
         socket.broadcast.emit("producer-add", {
           id: producer.id,
           kind: producer.kind,

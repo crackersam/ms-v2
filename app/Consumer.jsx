@@ -24,7 +24,7 @@ const Consumer = ({ consumer, audioConsumer, socket }) => {
     }
   }, [audioConsumer]);
   return consumer ? (
-    <div className="flex flex-col w-1/5">
+    <div className="flex flex-col w-1/5 rounded-md m-2 border-slate-400 border-[3px]">
       <video ref={videoRef} autoPlay controls playsInline />
       <div className="text-black bg-white">{consumer.producerId}</div>
     </div>
