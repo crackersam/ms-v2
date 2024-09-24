@@ -65,7 +65,7 @@ const Home = () => {
       setConsumers((prevConsumers) => {
         const newConsumers = [...prevConsumers];
         const index = newConsumers.findIndex(
-          (consumer) => consumer.socketId === socketId
+          (consumer) => consumer?.socketId === socketId
         );
         if (index !== -1) {
           newConsumers[index].consumer.close();
@@ -76,7 +76,7 @@ const Home = () => {
       setAudioConsumers((prevConsumers) => {
         const newConsumers = [...prevConsumers];
         const index = newConsumers.findIndex(
-          (consumer) => consumer.socketId === socketId
+          (consumer) => consumer?.socketId === socketId
         );
         if (index !== -1) {
           newConsumers[index].consumer.close();
@@ -354,22 +354,23 @@ const Home = () => {
       <button onClick={getLocalStream}>Publish</button>
       <button onClick={goConsume}>Consume</button>
       <video ref={localVideo} autoPlay muted controls />
+      <div className="flex flex-row">
+        {consumers.map((consumer, i) => {
+          // Find the matching audioConsumer based on appData
+          const matchingAudio = audioConsumers.find(
+            (audio) => audio?.appData === consumer?.appData
+          );
 
-      {consumers.map((consumer, i) => {
-        // Find the matching audioConsumer based on appData
-        const matchingAudio = audioConsumers.find(
-          (audio) => audio?.appData === consumer?.appData
-        );
-
-        return (
-          <Consumer
-            key={i}
-            consumer={consumer} // Pass the video stream
-            audioConsumer={matchingAudio || undefined} // Pass the audio stream only if it exists
-            socket={socket}
-          />
-        );
-      })}
+          return (
+            <Consumer
+              key={i}
+              consumer={consumer} // Pass the video stream
+              audioConsumer={matchingAudio || undefined} // Pass the audio stream only if it exists
+              socket={socket}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };
