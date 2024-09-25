@@ -24,10 +24,12 @@ const Consumer = ({ consumer, audioConsumer, socket }) => {
       socket.on("activeSpeaker", (data) => {
         const activeSpeakerId = data.producerId;
         // Highlight or enlarge the video feed of the active speaker
-        if (activeSpeakerId === audioConsumer.producerId) {
-          videoRef.current?.style.border = "5px solid red";
-        } else {
-          videoRef.current?.style.border = "none";
+        if (videoRef.current) {
+          if (activeSpeakerId === audioConsumer.producerId) {
+            videoRef.current.style.border = "5px solid red";
+          } else {
+            videoRef.current.style.border = "none";
+          }
         }
       });
     }
