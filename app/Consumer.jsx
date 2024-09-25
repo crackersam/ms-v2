@@ -16,7 +16,6 @@ const Consumer = ({ consumer, audioConsumer, socket }) => {
   }, []);
   useEffect(() => {
     if (audioConsumer) {
-      if (runOnce.current) return;
       const { track } = audioConsumer.consumer;
       videoRef.current.srcObject.addTrack(track);
       socket.emit("consumer-resume", {
@@ -31,7 +30,6 @@ const Consumer = ({ consumer, audioConsumer, socket }) => {
           videoRef.current.style.border = "none";
         }
       });
-      runOnce.current = true;
     }
   }, [audioConsumer]);
   return consumer ? (
