@@ -85,6 +85,7 @@ const Home = () => {
         return newConsumers;
       });
     });
+
     runOnce.current = true;
   }, []);
 

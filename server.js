@@ -28,6 +28,7 @@ app.prepare().then(() => {
   let transports = [];
   let producers = [];
   let consumers = [];
+  let audioLevelObserver;
 
   const createWorker = async () => {
     worker = await mediasoup.createWorker({
@@ -92,6 +93,25 @@ app.prepare().then(() => {
         // appData -> custom application data - we are not supplying any
         // none of the two are required
         router = await worker.createRouter({ mediaCodecs });
+        // Create an AudioLevelObserver on the router
+        audioLevelObserver = await router.createAudioLevelObserver({
+          maxEntries: 1, // Number of participants to detect as active speakers
+          threshold: -60, // Volume threshold in dB, above this is considered speech
+          interval: 800, // Interval in ms to calculate the audio levels
+        });
+        // Listen for active speaker changes
+        audioLevelObserver.on("volumes", (volumes) => {
+          const { producer, volume } = volumes[0]; // Get the most active speaker's producer
+          console.log(`Active speaker: ${producer.id}, volume: ${volume}`);
+          // Send active speaker info to all clients
+          socket.emit("activeSpeaker", { producerId: producer.id });
+        });
+
+        // Optional: listen for when no one is speaking
+        audioLevelObserver.on("silence", () => {
+          console.log("No active speakers");
+          socket.emit("activeSpeaker", { producerId: null });
+        });
         console.log(`Router ID: ${router.id}`);
       }
 
@@ -157,6 +177,9 @@ app.prepare().then(() => {
         });
 
         console.log("Producer ID: ", producer.id, producer.kind);
+        if (producer.kind === "audio") {
+          audioLevelObserver.addProducer({ producerId: producer.id });
+        }
         socket.broadcast.emit("producer-add", {
           id: producer.id,
           kind: producer.kind,

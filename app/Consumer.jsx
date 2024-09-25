@@ -16,11 +16,22 @@ const Consumer = ({ consumer, audioConsumer, socket }) => {
   }, []);
   useEffect(() => {
     if (audioConsumer) {
+      if (runOnce.current) return;
       const { track } = audioConsumer.consumer;
       videoRef.current.srcObject.addTrack(track);
       socket.emit("consumer-resume", {
         producerId: audioConsumer.producerId,
       });
+      socket.on("activeSpeaker", (data) => {
+        const activeSpeakerId = data.producerId;
+        // Highlight or enlarge the video feed of the active speaker
+        if (activeSpeakerId === audioConsumer.producerId) {
+          videoRef.current.style.border = "5px solid red";
+        } else {
+          videoRef.current.style.border = "none";
+        }
+      });
+      runOnce.current = true;
     }
   }, [audioConsumer]);
   return consumer ? (
