@@ -104,13 +104,13 @@ app.prepare().then(() => {
           const { producer, volume } = volumes[0]; // Get the most active speaker's producer
           console.log(`Active speaker: ${producer.id}, volume: ${volume}`);
           // Send active speaker info to all clients
-          socket.emit("activeSpeaker", { producerId: producer.id });
+          io.emit("activeSpeaker", { producerId: producer.id });
         });
 
         // Optional: listen for when no one is speaking
         audioLevelObserver.on("silence", () => {
           console.log("No active speakers");
-          socket.emit("activeSpeaker", { producerId: null });
+          io.emit("activeSpeaker", { producerId: null });
         });
         console.log(`Router ID: ${router.id}`);
       }
