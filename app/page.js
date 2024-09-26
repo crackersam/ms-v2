@@ -93,7 +93,6 @@ const Home = () => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
-        localVideo.current.srcObject = stream;
         const track = stream.getVideoTracks()[0];
         const audioTrack = stream.getAudioTracks()[0];
         audioParams.current.track = audioTrack;
@@ -250,6 +249,7 @@ const Home = () => {
 
       // close video track
     });
+    goConsume();
   };
 
   const createRecvTransport = async (producerId) => {
@@ -351,10 +351,16 @@ const Home = () => {
   };
 
   return (
-    <div>
-      <button onClick={getLocalStream}>Publish</button>
-      <button onClick={goConsume}>Consume</button>
-      <video ref={localVideo} autoPlay muted controls />
+    <div className="w-screen h-screen relative">
+      {!device.current && (
+        <button
+          className="absolute top-0 left-[50%] translate-x-[-50%] p-2 bg-slate-800 rounded-md text-white"
+          onClick={getLocalStream}
+        >
+          Publish
+        </button>
+      )}
+
       <div className="flex flex-row">
         {consumers.map((consumer, i) => {
           // Find the matching audioConsumer based on appData
