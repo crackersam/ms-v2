@@ -357,7 +357,7 @@ const Home = () => {
           className="absolute top-0 left-[50%] translate-x-[-50%] p-2 bg-slate-800 rounded-md text-white"
           onClick={getLocalStream}
         >
-          Publish
+          Join Room
         </button>
       )}
 
