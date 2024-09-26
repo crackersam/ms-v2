@@ -4,6 +4,7 @@ import { socket } from "@/socket";
 import * as mediasoup from "mediasoup-client";
 import Consumer from "./Consumer";
 import { v4 as uuidv4 } from "uuid";
+import ActiveSpeaker from "./ActiveSpeaker";
 
 const Home = () => {
   const localVideo = React.useRef(null);
@@ -360,7 +361,23 @@ const Home = () => {
           Join Room
         </button>
       )}
+      <div className="flex justify-center align-middle w-screen h-[calc(100vh-200px)]">
+        {consumers.map((consumer, i) => {
+          // Find the matching audioConsumer based on appData
+          const matchingAudio = audioConsumers.find(
+            (audio) => audio?.appData === consumer?.appData
+          );
 
+          return (
+            <ActiveSpeaker
+              key={i}
+              consumer={consumer} // Pass the video stream
+              audioConsumer={matchingAudio || undefined} // Pass the audio stream only if it exists
+              socket={socket}
+            />
+          );
+        })}
+      </div>
       <div className="flex flex-row">
         {consumers.map((consumer, i) => {
           // Find the matching audioConsumer based on appData

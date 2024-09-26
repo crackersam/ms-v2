@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 
-const Consumer = ({ consumer, audioConsumer, socket }) => {
+const ActiveSpeaker = ({ consumer, audioConsumer, socket }) => {
   const videoRef = useRef();
   const runOnce = useRef(false);
   useEffect(() => {
@@ -9,9 +9,6 @@ const Consumer = ({ consumer, audioConsumer, socket }) => {
 
     videoRef.current.srcObject = new MediaStream([track]);
 
-    socket.emit("consumer-resume", {
-      producerId: consumer.producerId,
-    });
     runOnce.current = true;
   }, []);
   useEffect(() => {
@@ -27,19 +24,18 @@ const Consumer = ({ consumer, audioConsumer, socket }) => {
         if (videoRef.current) {
           if (activeSpeakerId === audioConsumer.producerId) {
             videoRef.current.style.border = "5px solid red";
+            videoRef.current.style.display = "block";
           } else {
             videoRef.current.style.border = "none";
+            videoRef.current.style.display = "none";
           }
         }
       });
     }
   }, [audioConsumer]);
   return consumer ? (
-    <div className="flex flex-col w-[200px] rounded-md m-2 border-slate-400 border-[3px]">
-      <video ref={videoRef} autoPlay controls playsInline />
-      <div className="text-black bg-white">{consumer.producerId}</div>
-    </div>
+    <video className="hidden" ref={videoRef} autoPlay controls playsInline />
   ) : null;
 };
 
-export default Consumer;
+export default ActiveSpeaker;
