@@ -361,7 +361,7 @@ const Home = () => {
           Join Room
         </button>
       )}
-      <div className="flex justify-center align-middle w-screen h-[calc(100vh-200px)]">
+      <div className="absolute justify-center align-middle w-screen h-[calc(100vh-200px)]">
         {consumers.map((consumer, i) => {
           // Find the matching audioConsumer based on appData
           const matchingAudio = audioConsumers.find(
