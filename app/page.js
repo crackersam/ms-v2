@@ -44,7 +44,7 @@ const Home = () => {
   const isProducer = React.useRef(false);
   const isConsuming = React.useRef(false);
   const runOnce = React.useRef(false);
-  const [myId, setMyId] = React.useState(null);
+  const myId = React.useRef(null);
   useEffect(() => {
     if (runOnce.current) return;
     socket.on("connection-success", ({ socketId, existsProducer }) => {
@@ -205,7 +205,7 @@ const Home = () => {
               ({ id }) => {
                 // Tell the transport that parameters were transmitted and provide it with the
                 // server side producer's id.
-                setMyId(id);
+                myId.current = id;
                 callback({ id });
               }
             );
