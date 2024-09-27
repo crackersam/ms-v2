@@ -23,11 +23,9 @@ const ActiveSpeaker = ({ consumer, audioConsumer, socket }) => {
         // Highlight or enlarge the video feed of the active speaker
         if (videoRef.current) {
           if (activeSpeakerId === audioConsumer.producerId) {
-            videoRef.current.style.border = "5px solid red";
             videoRef.current.style.display = "block";
           } else {
-            videoRef.current.style.border = "none";
-            videoRef.current.style.display = "none";
+            videoRef.current.style.zIndex = "-1";
           }
         }
       });
