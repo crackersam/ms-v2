@@ -37,7 +37,6 @@ const ActiveSpeaker = ({ consumer, audioConsumer, socket }) => {
       className="absolute top-0 left-[50%] h-[calc(100vh-200px)] translate-x-[-50%] hidden"
       ref={videoRef}
       autoPlay
-      controls
       playsInline
     />
   ) : null;
