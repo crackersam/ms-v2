@@ -7,8 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import ActiveSpeaker from "./ActiveSpeaker";
 
 const Home = () => {
-  const localVideo = React.useRef(null);
-  const remoteVideo = React.useRef(null);
+  const speakerIndex = React.useRef(0);
   const rtpCapabilities = React.useRef(null);
   const params = React.useRef({
     // mediasoup params
@@ -371,6 +370,7 @@ const Home = () => {
           return (
             <ActiveSpeaker
               key={i}
+              speakerIndex={speakerIndex}
               consumer={consumer} // Pass the video stream
               audioConsumer={matchingAudio || undefined} // Pass the audio stream only if it exists
               socket={socket}

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 
-const ActiveSpeaker = ({ consumer, audioConsumer, socket }) => {
+const ActiveSpeaker = ({ consumer, audioConsumer, socket, speakerIndex }) => {
   const videoRef = useRef();
   const runOnce = useRef(false);
   useEffect(() => {
@@ -24,9 +24,8 @@ const ActiveSpeaker = ({ consumer, audioConsumer, socket }) => {
         if (videoRef.current) {
           if (activeSpeakerId === audioConsumer.producerId) {
             videoRef.current.style.display = "block";
-            videoRef.current.style.zIndex = "1";
-          } else {
-            videoRef.current.style.zIndex = "-1";
+            speakerIndex.current += 1;
+            videoRef.current.style.zIndex = speakerIndex.current;
           }
         }
       });
