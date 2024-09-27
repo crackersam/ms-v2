@@ -35,10 +35,10 @@ const Consumer = ({ consumer, audioConsumer, socket }) => {
     }
   }, [audioConsumer]);
   return consumer ? (
-    <div className="flex flex-col justify-center align-middle rounded-md m-2 border-slate-400 border-[3px]">
+    <div className="flex flex-col justify-center bg-black align-middle rounded-md m-2 border-slate-400 border-[3px]">
       <video
         ref={videoRef}
-        className=" w-[200px] max-h-[200px]"
+        className=" w-[150px] h-[150px]"
         autoPlay
         controls
         playsInline
