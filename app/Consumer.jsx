@@ -16,7 +16,10 @@ const Consumer = ({ consumer, audioConsumer, myId, socket }) => {
   }, []);
   useEffect(() => {
     if (audioConsumer) {
-      if (myId.current === audioConsumer.producerId) {
+      if (
+        myId.current === audioConsumer.producerId ||
+        myId.current === consumer.producerId
+      ) {
         videoRef.current.muted = true;
       }
       const { track } = audioConsumer.consumer;
