@@ -355,13 +355,13 @@ const Home = () => {
     <div className="w-screen h-screen relative">
       {!device.current && (
         <button
-          className="absolute top-0 left-[50%] translate-x-[-50%] p-2 bg-slate-800 rounded-md text-white"
+          className="absolute top-0 left-[50%] z-10 translate-x-[-50%] p-2 bg-slate-800 rounded-md text-white"
           onClick={getLocalStream}
         >
           Join Room
         </button>
       )}
-      <div className="absolute justify-center align-middle w-screen h-[calc(100vh-200px)]">
+      <div className="absolute top-0 left-[50%] translate-x-[-50%] justify-center align-middle w-screen h-[calc(100vh-200px)]">
         {consumers.map((consumer, i) => {
           // Find the matching audioConsumer based on appData
           const matchingAudio = audioConsumers.find(
@@ -378,7 +378,7 @@ const Home = () => {
           );
         })}
       </div>
-      <div className="flex flex-row">
+      <div className="flex flex-row absolute bottom-0 w-screen">
         {consumers.map((consumer, i) => {
           // Find the matching audioConsumer based on appData
           const matchingAudio = audioConsumers.find(

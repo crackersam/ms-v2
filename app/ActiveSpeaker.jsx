@@ -24,6 +24,7 @@ const ActiveSpeaker = ({ consumer, audioConsumer, socket }) => {
         if (videoRef.current) {
           if (activeSpeakerId === audioConsumer.producerId) {
             videoRef.current.style.display = "block";
+            videoRef.current.style.zIndex = "1";
           } else {
             videoRef.current.style.zIndex = "-1";
           }
@@ -32,7 +33,13 @@ const ActiveSpeaker = ({ consumer, audioConsumer, socket }) => {
     }
   }, [audioConsumer]);
   return consumer ? (
-    <video className="hidden" ref={videoRef} autoPlay controls playsInline />
+    <video
+      className="absolute top-0 left-[50%] h-[calc(100vh-200px)] translate-x-[-50%] hidden"
+      ref={videoRef}
+      autoPlay
+      controls
+      playsInline
+    />
   ) : null;
 };
 
