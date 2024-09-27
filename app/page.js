@@ -378,7 +378,7 @@ const Home = () => {
           );
         })}
       </div>
-      <div className="flex flex-row absolute bottom-0 w-screen">
+      <div className="flex flex-row absolute bottom-0 overflow-x-auto w-screen">
         {consumers.map((consumer, i) => {
           // Find the matching audioConsumer based on appData
           const matchingAudio = audioConsumers.find(

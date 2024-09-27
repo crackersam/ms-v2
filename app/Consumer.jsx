@@ -35,8 +35,14 @@ const Consumer = ({ consumer, audioConsumer, socket }) => {
     }
   }, [audioConsumer]);
   return consumer ? (
-    <div className="flex flex-col w-[200px] max-h-[200px] rounded-md m-2 border-slate-400 border-[3px]">
-      <video ref={videoRef} autoPlay controls playsInline />
+    <div className="flex flex-col justify-center align-middle rounded-md m-2 border-slate-400 border-[3px]">
+      <video
+        ref={videoRef}
+        className=" w-[200px] max-h-[200px]"
+        autoPlay
+        controls
+        playsInline
+      />
     </div>
   ) : null;
 };
