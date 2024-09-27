@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 const ActiveSpeaker = ({ consumer, audioConsumer, socket, speakerIndex }) => {
   const videoRef = useRef();
   const runOnce = useRef(false);
+  const bgRef = useRef();
   useEffect(() => {
     if (runOnce.current) return;
     const { track } = consumer.consumer;
@@ -25,6 +26,7 @@ const ActiveSpeaker = ({ consumer, audioConsumer, socket, speakerIndex }) => {
           if (activeSpeakerId === audioConsumer.producerId) {
             videoRef.current.style.display = "block";
             speakerIndex.current += 1;
+            bgRef.current.style.zIndex = speakerIndex.current - 1;
             videoRef.current.style.zIndex = speakerIndex.current;
           }
         }
@@ -32,9 +34,12 @@ const ActiveSpeaker = ({ consumer, audioConsumer, socket, speakerIndex }) => {
     }
   }, [audioConsumer]);
   return consumer ? (
-    <div className="width-screen bg-black">
+    <div
+      ref={bgRef}
+      className="w-screen bg-black absolute top-0 left-0 h-[calc(100vh-200px)]"
+    >
       <video
-        className="absolute top-0 left-[50%] h-[calc(100vh-200px)] translate-x-[-50%] hidden"
+        className="relative top-0 left-[50%] h-full translate-x-[-50%] hidden"
         ref={videoRef}
         autoPlay
         playsInline
