@@ -33,12 +33,14 @@ const ActiveSpeaker = ({ consumer, audioConsumer, socket }) => {
     }
   }, [audioConsumer]);
   return consumer ? (
-    <video
-      className="absolute top-0 left-[50%] h-[calc(100vh-200px)] translate-x-[-50%] hidden"
-      ref={videoRef}
-      autoPlay
-      playsInline
-    />
+    <div className="width-screen bg-black">
+      <video
+        className="absolute top-0 left-[50%] h-[calc(100vh-200px)] translate-x-[-50%] hidden"
+        ref={videoRef}
+        autoPlay
+        playsInline
+      />
+    </div>
   ) : null;
 };
 
