@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 
-const Consumer = ({ consumer, audioConsumer, socket }) => {
+const Consumer = ({ consumer, audioConsumer, myId, socket }) => {
   const videoRef = useRef();
   const runOnce = useRef(false);
   useEffect(() => {
@@ -16,6 +16,9 @@ const Consumer = ({ consumer, audioConsumer, socket }) => {
   }, []);
   useEffect(() => {
     if (audioConsumer) {
+      if (myId === consumer.producerId) {
+        videoRef.current.muted = true;
+      }
       const { track } = audioConsumer.consumer;
       videoRef.current.srcObject.addTrack(track);
       socket.emit("consumer-resume", {

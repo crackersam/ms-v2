@@ -42,6 +42,7 @@ const ActiveSpeaker = ({ consumer, audioConsumer, socket, speakerIndex }) => {
         className="relative top-0 left-[50%] h-full translate-x-[-50%] hidden"
         ref={videoRef}
         autoPlay
+        muted
         playsInline
       />
     </div>

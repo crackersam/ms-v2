@@ -44,6 +44,7 @@ const Home = () => {
   const isProducer = React.useRef(false);
   const isConsuming = React.useRef(false);
   const runOnce = React.useRef(false);
+  const [myId, setMyId] = React.useState(null);
   useEffect(() => {
     if (runOnce.current) return;
     socket.on("connection-success", ({ socketId, existsProducer }) => {
@@ -204,6 +205,7 @@ const Home = () => {
               ({ id }) => {
                 // Tell the transport that parameters were transmitted and provide it with the
                 // server side producer's id.
+                setMyId(id);
                 callback({ id });
               }
             );
@@ -388,6 +390,7 @@ const Home = () => {
           return (
             <Consumer
               key={i}
+              myId={myId}
               consumer={consumer} // Pass the video stream
               audioConsumer={matchingAudio || undefined} // Pass the audio stream only if it exists
               socket={socket}
