@@ -44,7 +44,7 @@ const Consumer = ({ consumer, audioConsumer, myId, socket }) => {
     <div className="flex flex-col justify-center bg-black align-middle rounded-md m-2 border-slate-400 border-[3px]">
       <video
         ref={videoRef}
-        className=" w-[150px] h-[150px]"
+        className=" w-[180px] h-[180px]"
         autoPlay
         controls
         playsInline
