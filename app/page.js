@@ -5,6 +5,7 @@ import * as mediasoup from "mediasoup-client";
 import Consumer from "./Consumer";
 import { v4 as uuidv4 } from "uuid";
 import ActiveSpeaker from "./ActiveSpeaker";
+import { Fullscreen, Minimize } from "lucide-react";
 
 const Home = () => {
   const speakerIndex = React.useRef(0);
@@ -45,6 +46,7 @@ const Home = () => {
   const isConsuming = React.useRef(false);
   const runOnce = React.useRef(false);
   const myId = React.useRef(null);
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
   useEffect(() => {
     if (runOnce.current) return;
     socket.on("connection-success", ({ socketId, existsProducer }) => {
@@ -398,6 +400,30 @@ const Home = () => {
           );
         })}
       </div>
+      {device.current && !isFullscreen && (
+        <Fullscreen
+          className="absolute bottom-0 right-0 p-2 text-white"
+          size={48}
+          stroke="white"
+          strokeWidth={2}
+          onClick={() => {
+            document.documentElement.requestFullscreen();
+            setIsFullscreen(true);
+          }}
+        />
+      )}{" "}
+      {isFullscreen && (
+        <Minimize
+          className="absolute bottom-0 right-0 p-2 text-white"
+          size={48}
+          stroke="white"
+          strokeWidth={2}
+          onClick={() => {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

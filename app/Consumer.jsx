@@ -32,7 +32,7 @@ const Consumer = ({ consumer, audioConsumer, myId, socket }) => {
         // Highlight or enlarge the video feed of the active speaker
         if (videoRef.current) {
           if (activeSpeakerId === audioConsumer.producerId) {
-            videoRef.current.style.border = "5px solid red";
+            videoRef.current.style.border = "5px solid #0000ff";
           } else {
             videoRef.current.style.border = "none";
           }
