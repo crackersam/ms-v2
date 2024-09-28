@@ -47,6 +47,7 @@ const Home = () => {
   const runOnce = React.useRef(false);
   const myId = React.useRef(null);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const fullscreen = React.useRef(null);
   useEffect(() => {
     if (runOnce.current) return;
     socket.on("connection-success", ({ socketId, existsProducer }) => {
@@ -355,7 +356,7 @@ const Home = () => {
   };
 
   return (
-    <div className="w-screen h-screen relative">
+    <div ref={fullscreen} className="w-screen h-screen relative">
       {!device.current && (
         <button
           className="absolute top-0 left-[50%] z-10 translate-x-[-50%] p-2 bg-slate-800 rounded-md text-white"
@@ -407,7 +408,7 @@ const Home = () => {
           stroke="white"
           strokeWidth={2}
           onClick={() => {
-            document.documentElement.requestFullscreen();
+            fullscreen.current.requestFullscreen();
             setIsFullscreen(true);
           }}
         />
