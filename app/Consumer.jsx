@@ -41,7 +41,7 @@ const Consumer = ({ consumer, audioConsumer, myId, socket }) => {
     }
   }, [audioConsumer]);
   return consumer ? (
-    <div className="flex flex-col justify-center bg-black align-middle rounded-md m-2 border-slate-400 border-[3px]">
+    <div className="flex flex-col flex-shrink-0 justify-center bg-black align-middle rounded-md m-2 border-slate-400 border-[3px]">
       <video
         ref={videoRef}
         className=" w-[180px] h-[180px]"
