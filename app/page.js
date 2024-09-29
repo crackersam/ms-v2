@@ -48,6 +48,7 @@ const Home = () => {
   const myId = React.useRef(null);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
   const fullscreen = React.useRef(null);
+  const [button, setButton] = React.useState(false);
   useEffect(() => {
     if (runOnce.current) return;
     socket.on("connection-success", ({ socketId, existsProducer }) => {
@@ -94,6 +95,7 @@ const Home = () => {
   }, []);
 
   const getLocalStream = () => {
+    setButton(true);
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
@@ -357,7 +359,7 @@ const Home = () => {
 
   return (
     <div ref={fullscreen} className="w-screen h-screen relative">
-      {!device.current && (
+      {!button && (
         <button
           className="absolute top-0 left-[50%] z-10 translate-x-[-50%] p-2 bg-slate-800 rounded-md text-white"
           onClick={getLocalStream}
